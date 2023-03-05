@@ -1,10 +1,11 @@
 import { readFile } from 'fs/promises';
-import pg from 'pg';
+import pg, { QueryResult } from 'pg';
 import { join } from 'path';
 import { Department, mapDbDepartmentsToDepartments } from './departments.js';
 import { parse } from './parser.js';
 import { Class } from './classes.js';
 import dotenv from 'dotenv';
+import { slugify } from '../utils/slugify.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
@@ -56,10 +57,10 @@ export async function addDepartment(department: Department) {
   return result?.rows[0]?.id;
 }
 
-export async function addClass(classObj: Class) {
+export async function addClass(classObj: Class, deptSlug : string) {
   const q = `INSERT INTO classes (department, name, number, semester, credits, degree, linkToSyllabus) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`;
   const values : Array<string> = [
-    classObj.department,
+    deptSlug,
     classObj.name,
     classObj.number,
     classObj.semester? classObj.semester: "",
@@ -93,7 +94,6 @@ export async function end() {
   await pool.end();
 }
 
-
 export async function makeDb() {
   const jsonData = await readFile('./data/index.json', 'utf-8');
   const parsed = JSON.parse(jsonData);
@@ -107,7 +107,7 @@ export async function makeDb() {
 
     const department : Department = {
       title: title,
-      slug: title.substring(0, title.length - 4),
+      slug: slugify(name),
       description: description,
       id: 0,
       name,
@@ -115,8 +115,7 @@ export async function makeDb() {
     await addDepartment(department)
 
     if (file) {
-      // const content = await(readFile(join(DATA_DIR, title), { encoding: 'latin1' }));
-      const classes = await parse(join(DATA_DIR, title), name);
+      const classes = await parse(join(DATA_DIR, title), title.substring(0, title.length - 4));
         const result : Department = {
           title,
           classes,
@@ -132,3 +131,53 @@ export async function makeDb() {
       }
     }
 }
+
+export async function dbDeleteDepartment(dept : string) {
+  const q = `DELETE FROM departments WHERE slug = $1 RETURNING id`;
+  const values = [dept];
+  const result = await query(q, values);
+  return result?.rows[0]?.id;
+}
+
+/*
+
+export async function conditionalUpdate(table : string, id : string, fields : Array<string | null>, values : Array<string | null>) : Promise<pg.QueryResult> {
+
+  if (!fields) {
+    return null;
+  }
+
+  const filteredFields = fields.filter((i: any) => typeof i === 'string');
+
+  const filteredValues = values.filter(
+    (i: any) => typeof i === 'string' || typeof i === 'number' || i instanceof Date
+  );
+
+  if (filteredFields.length === 0) {
+    return ;
+  }
+
+  if (filteredFields.length !== filteredValues.length) {
+    throw new Error('fields and values must be of equal length');
+  }
+
+  // id is field = 1
+  const updates = filteredFields.map((field, i) => `${field} = $${i + 2}`);
+
+  const q = `
+    UPDATE ${table}
+      SET ${updates.join(', ')}
+    WHERE
+      id = $1
+    RETURNING *
+    `;
+
+  const queryValues = filteredValues;
+  const result = await query(q, queryValues);
+  if (result) {
+    return result.rows[0];
+  }
+
+
+}
+*/

@@ -7,7 +7,7 @@ import { readFile } from './file.js';
  * @param {string} input Slóð á csv skrá sem inniheldur áfanga og upplýsingar um þá
  * @returns array af námskeiðum ef það eru einhver námskeið fyrir námsleiðina, annars []
  */
-export async function parse(input : string, deptName : string): Promise<Array<Class>> {
+export async function parse(input : string, deptSlug : string): Promise<Array<Class>> {
   const data = await readFile(input, { encoding: 'latin1' });
   if (!data) {
     return [];
@@ -51,9 +51,9 @@ export async function parse(input : string, deptName : string): Promise<Array<Cl
         semester,
         degree,
         linkToSyllabus,
-        department: deptName,
+        department: deptSlug,
       };
-      await addClass(result);
+      await addClass(result, deptSlug);
       results.push(result);
     }
   }

@@ -1,4 +1,5 @@
 import { QueryResult } from "pg";
+import { slugify } from "../utils/slugify.js";
 import { Class } from "./classes.js";
 import { query } from "./db.js";
 
@@ -27,11 +28,11 @@ export function departmentMapper(input: unknown): Department | null {
 
   const department: Department = {
     id: potentialDepartment.id,
+    name: potentialDepartment.name,
     title: potentialDepartment.title,
-    slug: potentialDepartment.slug,
+    slug: slugify(potentialDepartment.name),
     description: potentialDepartment.description,
     classes: [],
-    name: potentialDepartment.name,
   }
   return department;
 }
@@ -57,7 +58,6 @@ export async function findDepartmentNameBySlug(slug: string): Promise<string | n
   const result = await query('SELECT * FROM departments WHERE slug = $1', [slug]);
   const department = mapDbDepartmentToDepartment(result);
   if (department) {
-    // console.log(department.title);
     return department.title;
   }
   return null;
