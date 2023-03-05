@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { catchErrors } from '../lib/catch-errors.js';
 import { query } from '../lib/db.js';
-import { mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
+import { findAllDepartments, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
 
 export const departmentsRouter = express.Router();
 
@@ -50,8 +50,14 @@ async function departmentRoute(req: Request, res: Response, next: NextFunction) 
 /**
  * returns all departments
  */
-departmentsRouter.get('/departments',
-  catchErrors(departmentsRoute)
+departmentsRouter.get('/departments', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const departments = await findAllDepartments();
+    res.status(200).json(departments);
+  } catch (err) {
+    next(err);
+  }
+}
 );
 
 /**
