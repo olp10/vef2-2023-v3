@@ -1,6 +1,6 @@
 import { QueryResult } from "pg";
+import { slugify } from "../utils/slugify.js";
 import { query } from "./db.js";
-import { mapDbDepartmentsToDepartments } from "./departments";
 
 export type Class = {
   id: number;
@@ -11,6 +11,7 @@ export type Class = {
   semester?: string;
   degree?: string;
   linkToSyllabus?: string;
+  slug: string;
 }
 
 export function classMapper(input: unknown): Class | null {
@@ -32,6 +33,7 @@ export function classMapper(input: unknown): Class | null {
     semester: potentialClass.semester,
     credits: potentialClass.credits,
     department: potentialClass.department,
+    slug: slugify(potentialClass.name),
   }
   return classObj;
 }
@@ -55,4 +57,13 @@ export function mapDbClassToClasses(input: QueryResult<any> | null): Array<Class
 export async function findClassesByDepartment(department: string): Promise<Array<Class>> {
   const result = await query('SELECT * FROM classes WHERE department = $1', [department]);
   return mapDbClassToClasses(result);
+}
+
+export async function findClassIdBySlug(slug: string): Promise<number | null> {
+  const result = await query('SELECT * FROM classes WHERE slug = $1', [slug]);
+  const classObj = mapDbClassToClass(result);
+  if (classObj) {
+    return classObj.id;
+  }
+  return null;
 }

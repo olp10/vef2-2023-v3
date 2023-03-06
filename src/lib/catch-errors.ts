@@ -5,9 +5,9 @@ import { Request, Response, NextFunction } from 'express';
  * @params {function} fn Function to wrap
  * @returns {Promise} Promise with error handling
  */
-export function catchErrors(
+export function catchErrors (
   fn: (req: Request, res: Response, next: NextFunction) => Promise<void>,
-): (req: Request, res: Response, next: NextFunction) => Promise<void> {
+): (req: Request, res: Response, next: NextFunction) => Promise<void | any> {
   return (req: Request, res: Response, next: NextFunction) =>
     fn(req, res, next).catch(next);
 }

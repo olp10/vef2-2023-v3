@@ -1,5 +1,4 @@
-import { readFile } from 'fs/promises';
-import { createSchema, dropSchema, end, makeDb, query } from './lib/db.js';
+import { createSchema, dropSchema, end, makeDb } from './lib/db.js';
 
 export async function create() {
   const drop = await dropSchema();

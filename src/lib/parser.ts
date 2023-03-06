@@ -1,3 +1,4 @@
+import { slugify } from '../utils/slugify.js';
 import { Class } from './classes.js';
 import { addClass, addDepartment } from './db.js';
 import { readFile } from './file.js';
@@ -28,6 +29,7 @@ export async function parse(input : string, deptSlug : string): Promise<Array<Cl
       const semester = moreSplitted[3];
       const degree = moreSplitted[4];
       const linkToSyllabus = moreSplitted[5];
+      const slug = slugify(number);
 
       if (moreSplitted[0] === '' || moreSplitted[4] === '' || moreSplitted[1] === '') {
         continue;
@@ -52,6 +54,7 @@ export async function parse(input : string, deptSlug : string): Promise<Array<Cl
         degree,
         linkToSyllabus,
         department: deptSlug,
+        slug,
       };
       await addClass(result, deptSlug);
       results.push(result);

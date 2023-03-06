@@ -1,8 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { catchErrors } from '../lib/catch-errors.js';
 import { findClassesByDepartment } from '../lib/classes.js';
-import { dbDeleteDepartment, query } from '../lib/db.js';
-import { Department, findAllDepartments, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
+import { conditionalUpdate, dbDeleteDepartment, query } from '../lib/db.js';
+import { findAllDepartments, findDepartmentIdBySlug, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
 import { isString } from '../lib/isString.js';
 
 export const departmentsRouter = express.Router();
@@ -22,7 +22,7 @@ export async function departmentsRoute(req: Request, res: Response, next: NextFu
 }
 
 async function deleteDepartment(req: Request, res: Response, next: NextFunction) {
-  // TODO:
+  const { id } = req.params;
   const { slug } = req.params;
   try {
     dbDeleteDepartment(slug);
@@ -48,14 +48,14 @@ async function createDepartment(req: Request, res: Response, next: NextFunction)
   const { body } = req;
   const fields = [
     isString(body.name) ? 'name' : null,
-    isString(body.title) ? 'title' : null,
+    isString(body.csv) ? 'csv' : null,
     isString(body.slug) ? 'slug' : null,
     isString(body.description) ? 'description' : null,
   ]
 
   const values = [
     isString(body.name) ? body.name : "",
-    isString(body.title) ? body.title : "",
+    isString(body.csv) ? body.csv : "",
     isString(body.slug) ? body.slug : "",
     isString(body.description) ? body.description : "",
   ]
@@ -83,10 +83,10 @@ async function createDepartment(req: Request, res: Response, next: NextFunction)
   }
 
 
-  // Láta Slugify-a sjálfkrafa - Description valkvæmt og þarf að vera sett inn conditionally
+  // Description valkvæmt og þarf að vera sett inn conditionally
   const q = `
     INSERT INTO departments
-      (name, title, slug, description)
+      (name, csv, slug, description)
     VALUES
       ($1, $2, $3, $4)
     RETURNING *
@@ -101,33 +101,38 @@ async function createDepartment(req: Request, res: Response, next: NextFunction)
 }
 
 export async function patchDepartment(req : Request, res : Response) {
-  // TODO:
-  const { id } = req.params;
   const { body } = req;
+  const { slug } = req.params;
+  const id = await findDepartmentIdBySlug(slug);
 
   const fields = [
     isString(body.name) ? 'name' : null,
-    isString(body.title) ? 'title' : null,
+    isString(body.csv) ? 'csv' : null,
     isString(body.slug) ? 'slug' : null,
     isString(body.description) ? 'description' : null,
   ]
 
   const values = [
     isString(body.name) ? body.name : null,
-    isString(body.title) ? body.title : null,
+    isString(body.csv) ? body.csv : null,
     isString(body.slug) ? body.slug : null,
     isString(body.description) ? body.description : null,
   ]
 
-  /* const result = await conditionalUpdate('departments', id, fields, values);
+  if (id) {
+    const result = await conditionalUpdate('departments', id.toString(), fields, values);
+    if (!result) {
+      return res.status(400).json({
+        error: 'Nothing to update',
+      })
+    }
 
-  if (!result) {
-    return res.status(400).json({
-      error: 'Nothing to update',
-    })
+    return res.status(200).json(result);
   }
 
-  return res.status(200).json(result.rows[0]); */ // TODO: finna útúr conditional update með typescript!
+  return res.status(404).json({
+    error: 'No department found',
+  })
 }
 
 async function departmentRoute(req: Request, res: Response, next: NextFunction) {
@@ -153,26 +158,9 @@ async function departmentRoute(req: Request, res: Response, next: NextFunction) 
   }
 }
 
-/**
- * Býr til nýja deild
- */
-departmentsRouter.post('/departments', createDepartment);
-
-// TODO: 200 OK -> Skilað ásamt upplýsingum um deild
-// TODO: 400 Bad Request -> Skilað ef gögn ekki rétt (vantar/á röngu formi/ólöglegt)  Einhvers konar validation/sanitation middleware
-
-/**
- * Uppfærir deild
- */
-departmentsRouter.patch('/departments/:slug', patchDepartment)
-// TODO: 200 OK skilað með uppfærðri deild ef gekk.
-// TODO: 400 Bad Request skilað ef gögn sem send inn eru ekki rétt.
-// TODO: 404 Not Found skilað ef deild er ekki til.
-// TODO: 500 Internal Error skilað ef villa kom upp.
-
-
 
 // Done
+departmentsRouter.patch('/departments/:slug', patchDepartment)
 departmentsRouter.get('/departments', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const departments = await findAllDepartments();
@@ -182,5 +170,6 @@ departmentsRouter.get('/departments', async (req: Request, res: Response, next: 
   }
 });
 departmentsRouter.get('/departments/:slug', catchErrors(departmentRoute));
+departmentsRouter.post('/departments', createDepartment);
 departmentsRouter.delete('/departments/:slug/delete', catchErrors(deleteDepartment));
 

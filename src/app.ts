@@ -1,6 +1,5 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { catchErrors } from './lib/catch-errors';
 import { router } from './routes/api.js';
 import { departmentsRouter } from './routes/departmentsRouter.js';
 import { classesRouter } from './routes/classesRouter.js';
@@ -21,7 +20,7 @@ app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
 });
 
-function notFoundHandler(req: express.Request, res: express.Response) {
+function notFoundHandler(req : express.Request, res: express.Response) {
   console.warn('Not found', req.originalUrl);
   res.status(404).json({
     error: 'Not found',

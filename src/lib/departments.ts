@@ -5,7 +5,7 @@ import { query } from "./db.js";
 
 export type Department = {
   id: number;
-  title: string;
+  csv: string;
   name: string;
   slug: string;
   description: string;
@@ -18,7 +18,7 @@ export function departmentMapper(input: unknown): Department | null {
   if (
     !potentialDepartment ||
     !potentialDepartment.id ||
-    !potentialDepartment.title ||
+    !potentialDepartment.csv ||
     !potentialDepartment.slug ||
     !potentialDepartment.description ||
     !potentialDepartment.name
@@ -29,7 +29,7 @@ export function departmentMapper(input: unknown): Department | null {
   const department: Department = {
     id: potentialDepartment.id,
     name: potentialDepartment.name,
-    title: potentialDepartment.title,
+    csv: potentialDepartment.csv,
     slug: slugify(potentialDepartment.name),
     description: potentialDepartment.description,
     classes: [],
@@ -58,7 +58,7 @@ export async function findDepartmentNameBySlug(slug: string): Promise<string | n
   const result = await query('SELECT * FROM departments WHERE slug = $1', [slug]);
   const department = mapDbDepartmentToDepartment(result);
   if (department) {
-    return department.title;
+    return department.csv;
   }
   return null;
 }
@@ -70,4 +70,13 @@ export async function findAllDepartments(): Promise<Array<Department>> {
     return result.rows;
   }
   return [];
+}
+
+export async function findDepartmentIdBySlug(slug: string): Promise<number | null> {
+  const result = await query('SELECT * FROM departments WHERE slug = $1', [slug]);
+  const department = mapDbDepartmentToDepartment(result);
+  if (department) {
+    return department.id;
+  }
+  return null;
 }

@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises';
-import pg, { QueryResult } from 'pg';
+import pg from 'pg';
 import { join } from 'path';
-import { Department, mapDbDepartmentsToDepartments } from './departments.js';
+import { Department } from './departments.js';
 import { parse } from './parser.js';
 import { Class } from './classes.js';
 import dotenv from 'dotenv';
@@ -46,10 +46,10 @@ export async function query(q: string, values: Array<QueryInput> = []) {
 }
 
 export async function addDepartment(department: Department) {
-  const q = `INSERT INTO departments (name, title, slug, description) VALUES ($1, $2, $3, $4) RETURNING id`;
+  const q = `INSERT INTO departments (name, csv, slug, description) VALUES ($1, $2, $3, $4) RETURNING id`;
   const values : Array<string> = [
     department.name,
-    department.title,
+    department.csv,
     department.slug,
     department.description,
   ];
@@ -58,7 +58,7 @@ export async function addDepartment(department: Department) {
 }
 
 export async function addClass(classObj: Class, deptSlug : string) {
-  const q = `INSERT INTO classes (department, name, number, semester, credits, degree, linkToSyllabus) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`;
+  const q = `INSERT INTO classes (department, name, number, semester, credits, degree, linkToSyllabus, slug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`;
   const values : Array<string> = [
     deptSlug,
     classObj.name,
@@ -67,6 +67,7 @@ export async function addClass(classObj: Class, deptSlug : string) {
     classObj.credits? JSON.stringify(classObj.credits) : "0",
     classObj.degree? classObj.degree: "",
     classObj.linkToSyllabus? classObj.linkToSyllabus : "",
+    classObj.slug,
   ];
 
   try {
@@ -106,18 +107,19 @@ export async function makeDb() {
     const csv = JSON.stringify(Object.values(file)[2]).replace(/["']/g, '');
 
     const department : Department = {
-      title: title,
+      csv: title,
       slug: slugify(name),
       description: description,
       id: 0,
       name,
     }
+
     await addDepartment(department)
 
     if (file) {
-      const classes = await parse(join(DATA_DIR, title), title.substring(0, title.length - 4));
+      const classes = await parse(join(DATA_DIR, title), department.slug);
         const result : Department = {
-          title,
+          csv: title,
           classes,
           description,
           id: 0,
@@ -139,9 +141,14 @@ export async function dbDeleteDepartment(dept : string) {
   return result?.rows[0]?.id;
 }
 
-/*
+export async function dbDeleteClass(classSlug : string) {
+  const q = `DELETE FROM classes WHERE slug = $1 RETURNING id`;
+  const values = [classSlug];
+  const result = await query(q, values);
+  return result?.rows[0]?.id;
+}
 
-export async function conditionalUpdate(table : string, id : string, fields : Array<string | null>, values : Array<string | null>) : Promise<pg.QueryResult> {
+export async function conditionalUpdate(table : string, id : string, fields : Array<string | null>, values : Array<string>) {
 
   if (!fields) {
     return null;
@@ -149,18 +156,17 @@ export async function conditionalUpdate(table : string, id : string, fields : Ar
 
   const filteredFields = fields.filter((i: any) => typeof i === 'string');
 
-  const filteredValues = values.filter(
+  const filteredValues : Array<string> = values.filter(
     (i: any) => typeof i === 'string' || typeof i === 'number' || i instanceof Date
   );
 
   if (filteredFields.length === 0) {
-    return ;
+    return null;
   }
 
   if (filteredFields.length !== filteredValues.length) {
-    throw new Error('fields and values must be of equal length');
+    return null;
   }
-
   // id is field = 1
   const updates = filteredFields.map((field, i) => `${field} = $${i + 2}`);
 
@@ -172,12 +178,9 @@ export async function conditionalUpdate(table : string, id : string, fields : Ar
     RETURNING *
     `;
 
-  const queryValues = filteredValues;
+  const queryValues = [id].concat(filteredValues);
   const result = await query(q, queryValues);
   if (result) {
     return result.rows[0];
   }
-
-
 }
-*/

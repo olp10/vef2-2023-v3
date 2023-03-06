@@ -1,8 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { catchErrors } from '../lib/catch-errors.js';
-import { query } from '../lib/db.js';
-import { findAllDepartments, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
-import { mapDbEventsToEvents, mapDbEventToEvent } from '../lib/events.js';
+import { findAllDepartments } from '../lib/departments.js';
 
 export const router = express.Router();
 
