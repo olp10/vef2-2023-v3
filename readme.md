@@ -3,8 +3,8 @@
 Verkefnið er framhald af verkefni 1 og snýst um að útbúa vefþjónustur ofan á „okkar eigin kennsluskrá“.
 
 
-`npm run setup` til að setja gögn inn í gagnagrunn á localhost
-`npm st`
+  `npm run setup` -> setja gögn inn í gagnagrunn á localhost\
+  `npm start` -> Keyra vefþjón
 
 ## Vefþjónustur
 

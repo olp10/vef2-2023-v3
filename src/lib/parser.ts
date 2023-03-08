@@ -25,7 +25,7 @@ export async function parse(input : string, deptSlug : string): Promise<Array<Cl
       const moreSplitted = splitData[line].split(';');
       const number : string = moreSplitted[0];
       const name : string = moreSplitted[1];
-      const credits = Number.parseInt(moreSplitted[2]);
+      const credits = Number.parseInt(moreSplitted[2], 10);
       const semester = moreSplitted[3];
       const degree = moreSplitted[4];
       const linkToSyllabus = moreSplitted[5];
@@ -56,7 +56,7 @@ export async function parse(input : string, deptSlug : string): Promise<Array<Cl
         department: deptSlug,
         slug,
       };
-      await addClass(result, deptSlug);
+      addClass(result, deptSlug);
       results.push(result);
     }
   }

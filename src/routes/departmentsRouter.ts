@@ -2,7 +2,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import { catchErrors } from '../lib/catch-errors.js';
 import { findClassesByDepartment } from '../lib/classes.js';
 import { conditionalUpdate, dbDeleteDepartment, query } from '../lib/db.js';
-import { findAllDepartments, findDepartmentIdBySlug, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
+import {
+  findAllDepartments, findDepartmentIdBySlug, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
 import { isString } from '../lib/isString.js';
 import { slugify } from '../utils/slugify.js';
 
@@ -44,7 +45,7 @@ async function deleteDepartment(req: Request, res: Response, next: NextFunction)
   }
 }
 
-async function createDepartment(req: Request, res: Response, next: NextFunction) {
+async function createDepartment(req: Request, res: Response) {
   const { body } = req;
   const fields = [
     isString(body.name) ? 'name' : null,

@@ -51,6 +51,7 @@ export async function readFilesFromDir(dir : string): Promise<string[]> {
  */
 export async function readFile(file : string, { encoding = 'latin1' } = {}) : Promise<string | null> {
   try {
+    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-unused-vars
     const content = await fsReadFile(file, encoding = 'latin1');
     return content.toString();
   } catch (e) {

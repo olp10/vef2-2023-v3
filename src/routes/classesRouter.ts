@@ -2,7 +2,6 @@ import express, { Request, Response, NextFunction } from 'express';
 import { catchErrors } from '../lib/catch-errors.js';
 import { findClassIdBySlug, mapDbClassesToClasses, mapDbClassToClass } from '../lib/classes.js';
 import { conditionalUpdate, dbDeleteClass, query } from '../lib/db.js';
-import { mapDbDepartmentsToDepartments } from '../lib/departments.js';
 import { isString } from '../lib/isString.js';
 import { slugify } from '../utils/slugify.js';
 
@@ -18,6 +17,7 @@ async function classRoute(req: Request, res: Response, next: NextFunction) {
   }
 
   res.json(classObj);
+  return null;
 }
 
 async function departmentClassesRoute(req: Request, res: Response, next: NextFunction) {
@@ -28,9 +28,10 @@ async function departmentClassesRoute(req: Request, res: Response, next: NextFun
     return next();
   }
   res.json(classes);
+  return null;
 }
 
-async function allClassesRoute(req: Request, res: Response, next: NextFunction) {
+async function allClassesRoute(req: Request, res: Response) {
   const result = await query('SELECT * FROM classes');
   const classes = mapDbClassesToClasses(result);
   if (classes) {
@@ -41,10 +42,10 @@ async function allClassesRoute(req: Request, res: Response, next: NextFunction) 
       error: 'No classes found',
     });
   }
+  return null;
 }
 
-async function createClass(req: Request, res: Response, next: NextFunction) {
-  // TODO:
+async function createClass(req: Request, res: Response) {
   const { body } = req;
   const fields = [
     isString(body.name) ? 'name' : null,
@@ -105,9 +106,10 @@ async function createClass(req: Request, res: Response, next: NextFunction) {
   if (result) {
     return res.status(200).json(result.rows[0]);
   }
+  return null;
 }
 
-async function deleteClass(req: Request, res: Response, next: NextFunction) {
+async function deleteClass(req: Request, res: Response) {
   // TODO:
   const { id, slug } = req.params;
   try {
@@ -129,7 +131,7 @@ async function deleteClass(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-async function patchClass(req: Request, res: Response, next: NextFunction) {
+async function patchClass(req: Request, res: Response) {
   // TODO:
   const { body } = req;
   const { slug } = req.params;
@@ -177,7 +179,7 @@ async function patchClass(req: Request, res: Response, next: NextFunction) {
 classesRouter.get('/classes', allClassesRoute);
 classesRouter.get('/departments/:department/classes', departmentClassesRoute);
 classesRouter.get('/departments/:department/classes/:slug',
-  catchErrors(classRoute)
+  classRoute
 );
 classesRouter.post('/departments/:department/classes', createClass);
 

@@ -17,7 +17,7 @@ app.use(classesRouter);
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+  console.info(`Server running at http://localhost:${port}/`);
 });
 
 function notFoundHandler(req : express.Request, res: express.Response) {
@@ -27,15 +27,8 @@ function notFoundHandler(req : express.Request, res: express.Response) {
   });
 }
 
-function errorHandler(err: Error, req: express.Request, res: express.Response, next: express.NextFunction) {
+function errorHandler(err: Error, req: express.Request, res: express.Response) {
   console.error(err);
-
-  /* TODO:
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: 'Invalid json' });
-  }
-  */
-
   res.status(500).json({
     error: err.message,
   });
