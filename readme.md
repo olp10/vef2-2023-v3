@@ -44,3 +44,17 @@ Verkefnið er framhald af verkefni 1 og snýst um að útbúa vefþjónustur ofa
     - "semester":
     - "linkToSyllabus":
 
+## Test
+
+### .env
+DATABASE_URL=postgres://:@localhost/vef2-2023-v3
+
+`createdb vef2-2023-v3`
+
+Tókst ekki að setja upp test gagnagrunninn tímanlega, svo þarf að búa til gagnagrunninn uppá nýtt fyrir hvert test
+
+Áður en test eru keyrð skal keyra
+
+ `npm run setup` sem notar .csv skrár í data möppu til að búa til gagnagrunninn ásamt schema.sql \
+ og svo \
+ `npm run test`

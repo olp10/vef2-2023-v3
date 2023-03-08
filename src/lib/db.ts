@@ -1,10 +1,10 @@
 import { readFile } from 'fs/promises';
 import pg from 'pg';
 import { join } from 'path';
+import dotenv from 'dotenv';
 import { Department } from './departments.js';
 import { parse } from './parser.js';
 import { Class } from './classes.js';
-import dotenv from 'dotenv';
 import { slugify } from '../utils/slugify.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
@@ -63,10 +63,10 @@ export async function addClass(classObj: Class, deptSlug : string) {
     deptSlug,
     classObj.name,
     classObj.number,
-    classObj.semester? classObj.semester: "",
-    classObj.credits? JSON.stringify(classObj.credits) : "0",
-    classObj.degree? classObj.degree: "",
-    classObj.linkToSyllabus? classObj.linkToSyllabus : "",
+    classObj.semester? classObj.semester: '',
+    classObj.credits? JSON.stringify(classObj.credits) : '0',
+    classObj.degree? classObj.degree: '',
+    classObj.linkToSyllabus? classObj.linkToSyllabus : '',
     classObj.slug,
   ];
 
@@ -109,7 +109,7 @@ export async function makeDb() {
     const department : Department = {
       csv: title,
       slug: slugify(name),
-      description: description,
+      description,
       id: 0,
       name,
     }
@@ -183,4 +183,5 @@ export async function conditionalUpdate(table : string, id : string, fields : Ar
   if (result) {
     return result.rows[0];
   }
+  return null;
 }

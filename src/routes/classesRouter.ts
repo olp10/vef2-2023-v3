@@ -1,5 +1,4 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { catchErrors } from '../lib/catch-errors.js';
 import { findClassIdBySlug, mapDbClassesToClasses, mapDbClassToClass } from '../lib/classes.js';
 import { conditionalUpdate, dbDeleteClass, query } from '../lib/db.js';
 import { isString } from '../lib/isString.js';
@@ -101,7 +100,6 @@ async function createClass(req: Request, res: Response) {
     `;
 
   const queryValues = filteredValues;
-  console.log(queryValues);
   const result = await query(q, queryValues);
   if (result) {
     return res.status(200).json(result.rows[0]);
@@ -111,7 +109,7 @@ async function createClass(req: Request, res: Response) {
 
 async function deleteClass(req: Request, res: Response) {
   // TODO:
-  const { id, slug } = req.params;
+  const { slug } = req.params;
   try {
     dbDeleteClass(slug);
     res.status(204).json({
@@ -184,7 +182,7 @@ classesRouter.get('/departments/:department/classes/:slug',
 classesRouter.post('/departments/:department/classes', createClass);
 
 classesRouter.delete('/departments/:department/classes/:slug',
-  catchErrors(deleteClass)
+  deleteClass
 );
 
 classesRouter.patch('/departments/:department/classes/:slug', patchClass);

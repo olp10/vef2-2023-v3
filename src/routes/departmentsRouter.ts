@@ -3,13 +3,16 @@ import { catchErrors } from '../lib/catch-errors.js';
 import { findClassesByDepartment } from '../lib/classes.js';
 import { conditionalUpdate, dbDeleteDepartment, query } from '../lib/db.js';
 import {
-  findAllDepartments, findDepartmentIdBySlug, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
+  findAllDepartments,
+  findDepartmentIdBySlug,
+  mapDbDepartmentsToDepartments,
+  mapDbDepartmentToDepartment } from '../lib/departments.js';
 import { isString } from '../lib/isString.js';
 import { slugify } from '../utils/slugify.js';
 
 export const departmentsRouter = express.Router();
 
-export async function departmentsRoute(req: Request, res: Response, next: NextFunction) {
+export async function departmentsRoute(req: Request, res: Response) {
   const result = await query('SELECT * FROM departments');
   const departments = mapDbDepartmentsToDepartments(result);
 
@@ -23,8 +26,7 @@ export async function departmentsRoute(req: Request, res: Response, next: NextFu
   }
 }
 
-async function deleteDepartment(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
+async function deleteDepartment(req: Request, res: Response) {
   const { slug } = req.params;
   try {
     dbDeleteDepartment(slug);
@@ -55,10 +57,10 @@ async function createDepartment(req: Request, res: Response) {
   ]
 
   const values = [
-    isString(body.name) ? body.name : "",
-    isString(body.csv) ? body.csv : "",
-    isString(body.name) ? slugify(body.name) : "",
-    isString(body.description) ? body.description : "",
+    isString(body.name) ? body.name : '',
+    isString(body.csv) ? body.csv : '',
+    isString(body.name) ? slugify(body.name) : '',
+    isString(body.description) ? body.description : '',
   ]
 
   if (!fields) {
@@ -83,7 +85,6 @@ async function createDepartment(req: Request, res: Response) {
     })
   }
 
-
   // Description valkvæmt og þarf að vera sett inn conditionally
   const q = `
     INSERT INTO departments
@@ -94,11 +95,11 @@ async function createDepartment(req: Request, res: Response) {
     `;
 
   const queryValues = filteredValues;
-  console.log(queryValues);
   const result = await query(q, queryValues);
   if (result) {
     return res.status(200).json(result.rows[0]);
   }
+  return [];
 }
 
 export async function patchDepartment(req : Request, res : Response) {
@@ -150,13 +151,13 @@ async function departmentRoute(req: Request, res: Response, next: NextFunction) 
   department.classes = classes;
 
   if (department) {
-    res.json(department);
+    return res.status(200).json(department);
   }
-  else {
-    res.status(404).json({
+
+    return res.status(404).json({
       error: 'No departments found',
     });
-  }
+
 }
 
 
@@ -170,7 +171,7 @@ departmentsRouter.get('/departments', async (req: Request, res: Response, next: 
     next(err);
   }
 });
-departmentsRouter.get('/departments/:slug', catchErrors(departmentRoute));
+departmentsRouter.get('/departments/:slug', departmentRoute);
 departmentsRouter.post('/departments', createDepartment);
 departmentsRouter.delete('/departments/:slug/delete', catchErrors(deleteDepartment));
 

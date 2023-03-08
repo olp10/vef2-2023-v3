@@ -1,7 +1,7 @@
-import { QueryResult } from "pg";
-import { slugify } from "../utils/slugify.js";
-import { Class } from "./classes.js";
-import { query } from "./db.js";
+import { QueryResult } from 'pg';
+import { slugify } from '../utils/slugify.js';
+import { Class } from './classes.js';
+import { query } from './db.js';
 
 export type Department = {
   id: number;

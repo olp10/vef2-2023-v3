@@ -1,6 +1,6 @@
-import { QueryResult } from "pg";
-import { slugify } from "../utils/slugify.js";
-import { query } from "./db.js";
+import { QueryResult } from 'pg';
+import { slugify } from '../utils/slugify.js';
+import { query } from './db.js';
 
 export type Class = {
   id: number;

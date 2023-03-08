@@ -1,6 +1,6 @@
 import { slugify } from '../utils/slugify.js';
 import { Class } from './classes.js';
-import { addClass, addDepartment } from './db.js';
+import { addClass } from './db.js';
 import { readFile } from './file.js';
 
 /**
