@@ -46,7 +46,7 @@ export function mapDbClassToClass(input: QueryResult<any> | null): Class | null 
   return classMapper(input.rows[0]);
 }
 
-export function mapDbClassToClasses(input: QueryResult<any> | null): Array<Class> {
+export function mapDbClassesToClasses(input: QueryResult<any> | null): Array<Class> {
   if (!input) {
     return [];
   }
@@ -56,7 +56,7 @@ export function mapDbClassToClasses(input: QueryResult<any> | null): Array<Class
 
 export async function findClassesByDepartment(department: string): Promise<Array<Class>> {
   const result = await query('SELECT * FROM classes WHERE department = $1', [department]);
-  return mapDbClassToClasses(result);
+  return mapDbClassesToClasses(result);
 }
 
 export async function findClassIdBySlug(slug: string): Promise<number | null> {

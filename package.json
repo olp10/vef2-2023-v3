@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "dotenv -e .env -- nodemon ./src/app.ts",
-    "start": "node --loader ts-node/esm ./src/app.ts dotenv -e .env node ./src/setup.js",
+    "start": "node --loader ts-node/esm ./src/app.ts dotenv -e .env",
     "setup": "node --loader ts-node/esm ./src/setup.ts dotenv -e .env",
     "test": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' dotenv -e .env.test -- jest ./*.test.js",
     "test-watch": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules' dotenv -e .env.test -- jest ./*.test.js",

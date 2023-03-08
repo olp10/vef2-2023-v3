@@ -24,12 +24,12 @@ export async function parse(input : string, deptSlug : string): Promise<Array<Cl
     if (line) {
       const moreSplitted = splitData[line].split(';');
       const number : string = moreSplitted[0];
-      const name = moreSplitted[1];
+      const name : string = moreSplitted[1];
       const credits = Number.parseInt(moreSplitted[2]);
       const semester = moreSplitted[3];
       const degree = moreSplitted[4];
       const linkToSyllabus = moreSplitted[5];
-      const slug = slugify(number);
+      const slug = name ? slugify(name) : '';
 
       if (moreSplitted[0] === '' || moreSplitted[4] === '' || moreSplitted[1] === '') {
         continue;

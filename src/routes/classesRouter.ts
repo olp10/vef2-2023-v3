@@ -1,7 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { catchErrors } from '../lib/catch-errors.js';
-import { findClassIdBySlug, mapDbClassToClass } from '../lib/classes.js';
+import { findClassIdBySlug, mapDbClassesToClasses, mapDbClassToClass } from '../lib/classes.js';
 import { conditionalUpdate, dbDeleteClass, query } from '../lib/db.js';
+import { mapDbDepartmentsToDepartments } from '../lib/departments.js';
 import { isString } from '../lib/isString.js';
 import { slugify } from '../utils/slugify.js';
 
@@ -17,6 +18,29 @@ async function classRoute(req: Request, res: Response, next: NextFunction) {
   }
 
   res.json(classObj);
+}
+
+async function departmentClassesRoute(req: Request, res: Response, next: NextFunction) {
+  const { department } = req.params;
+  const result = await query('SELECT * FROM classes WHERE department = $1', [department]);
+  const classes = mapDbClassesToClasses(result);
+  if (!classes) {
+    return next();
+  }
+  res.json(classes);
+}
+
+async function allClassesRoute(req: Request, res: Response, next: NextFunction) {
+  const result = await query('SELECT * FROM classes');
+  const classes = mapDbClassesToClasses(result);
+  if (classes) {
+    res.json(classes);
+  }
+  else {
+    res.status(404).json({
+      error: 'No classes found',
+    });
+  }
 }
 
 async function createClass(req: Request, res: Response, next: NextFunction) {
@@ -39,7 +63,7 @@ async function createClass(req: Request, res: Response, next: NextFunction) {
     typeof(body.credits) === 'number' ? body.credits : 0,
     isString(body.department) ? body.department : null,
     isString(body.linkToSyllabus) ? body.linkToSyllabus : null,
-    slugify(body.number),
+    slugify(body.name),
     isString(body.degree) ? body.degree : null,
   ]
 
@@ -143,16 +167,19 @@ async function patchClass(req: Request, res: Response, next: NextFunction) {
   }
 
   return res.status(404).json({
-    error: 'No department found',
+    error: 'No class found',
   })
 }
 
 // done
 
-classesRouter.get('/departments/:department/:slug',
+
+classesRouter.get('/classes', allClassesRoute);
+classesRouter.get('/departments/:department/classes', departmentClassesRoute);
+classesRouter.get('/departments/:department/classes/:slug',
   catchErrors(classRoute)
 );
-classesRouter.post('/departments/:department/:slug', createClass);
+classesRouter.post('/departments/:department/classes', createClass);
 
 classesRouter.delete('/departments/:department/classes/:slug',
   catchErrors(deleteClass)

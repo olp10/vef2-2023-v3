@@ -4,6 +4,7 @@ import { findClassesByDepartment } from '../lib/classes.js';
 import { conditionalUpdate, dbDeleteDepartment, query } from '../lib/db.js';
 import { findAllDepartments, findDepartmentIdBySlug, mapDbDepartmentsToDepartments, mapDbDepartmentToDepartment } from '../lib/departments.js';
 import { isString } from '../lib/isString.js';
+import { slugify } from '../utils/slugify.js';
 
 export const departmentsRouter = express.Router();
 
@@ -44,19 +45,18 @@ async function deleteDepartment(req: Request, res: Response, next: NextFunction)
 }
 
 async function createDepartment(req: Request, res: Response, next: NextFunction) {
-  // TODO:
   const { body } = req;
   const fields = [
     isString(body.name) ? 'name' : null,
     isString(body.csv) ? 'csv' : null,
-    isString(body.slug) ? 'slug' : null,
+    'slug',
     isString(body.description) ? 'description' : null,
   ]
 
   const values = [
     isString(body.name) ? body.name : "",
     isString(body.csv) ? body.csv : "",
-    isString(body.slug) ? body.slug : "",
+    isString(body.name) ? slugify(body.name) : "",
     isString(body.description) ? body.description : "",
   ]
 
