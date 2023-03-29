@@ -23,7 +23,8 @@ export function classMapper(input: unknown): Class | null {
     !potentialClass.number ||
     !potentialClass.semester ||
     !potentialClass.department ||
-    !potentialClass.credits
+    !potentialClass.credits ||
+    !potentialClass.degree
   ) { return null;  }
 
   const classObj: Class = {
@@ -34,6 +35,8 @@ export function classMapper(input: unknown): Class | null {
     credits: potentialClass.credits,
     department: potentialClass.department,
     slug: slugify(potentialClass.name),
+    degree: potentialClass.degree,
+    linkToSyllabus: potentialClass.linkToSyllabus !== null ? potentialClass.linkToSyllabus : '',
   }
   return classObj;
 }

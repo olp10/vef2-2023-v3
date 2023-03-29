@@ -80,3 +80,13 @@ export async function findDepartmentIdBySlug(slug: string): Promise<number | nul
   }
   return null;
 }
+
+export async function departmentExists(name: string): Promise<boolean> {
+  const q = `SELECT * FROM departments WHERE name = $1`;
+  const values = [name];
+  const result = await query(q, values);
+  if (result?. rows && result?.rows.length > 0) {
+    return true;
+  }
+  return false;
+}

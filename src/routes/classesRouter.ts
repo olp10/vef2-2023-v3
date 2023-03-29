@@ -21,7 +21,7 @@ async function classRoute(req: Request, res: Response, next: NextFunction) {
 
 async function departmentClassesRoute(req: Request, res: Response, next: NextFunction) {
   const { department } = req.params;
-  const result = await query('SELECT * FROM classes WHERE department = $1', [department]);
+  const result = await query('SELECT * FROM classes WHERE department = $1 ORDER BY name', [department]);
   const classes = mapDbClassesToClasses(result);
   if (!classes) {
     return next();
@@ -31,7 +31,7 @@ async function departmentClassesRoute(req: Request, res: Response, next: NextFun
 }
 
 async function allClassesRoute(req: Request, res: Response) {
-  const result = await query('SELECT * FROM classes');
+  const result = await query('SELECT * FROM classes ORDER BY number DESCENDING');
   const classes = mapDbClassesToClasses(result);
   if (classes) {
     res.json(classes);
@@ -46,6 +46,7 @@ async function allClassesRoute(req: Request, res: Response) {
 
 async function createClass(req: Request, res: Response) {
   const { body } = req;
+  console.log(body);
   const fields = [
     isString(body.name) ? 'name' : null,
     isString(body.number) ? 'number' : null,
@@ -174,15 +175,15 @@ async function patchClass(req: Request, res: Response) {
 // done
 
 
-classesRouter.get('/classes', allClassesRoute);
-classesRouter.get('/departments/:department/classes', departmentClassesRoute);
-classesRouter.get('/departments/:department/classes/:slug',
+classesRouter.get('/courses', allClassesRoute);
+classesRouter.get('/departments/:department/courses', departmentClassesRoute);
+classesRouter.get('/departments/:department/courses/:slug',
   classRoute
 );
-classesRouter.post('/departments/:department/classes', createClass);
+classesRouter.post('/departments/:department/courses', createClass);
 
-classesRouter.delete('/departments/:department/classes/:slug',
+classesRouter.delete('/departments/:department/courses/:slug',
   deleteClass
 );
 
-classesRouter.patch('/departments/:department/classes/:slug', patchClass);
+classesRouter.patch('/departments/:department/courses/:slug', patchClass);

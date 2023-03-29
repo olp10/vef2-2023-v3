@@ -3,6 +3,7 @@ import { catchErrors } from '../lib/catch-errors.js';
 import { findClassesByDepartment } from '../lib/classes.js';
 import { conditionalUpdate, dbDeleteDepartment, query } from '../lib/db.js';
 import {
+  departmentExists,
   findAllDepartments,
   findDepartmentIdBySlug,
   mapDbDepartmentsToDepartments,
@@ -49,17 +50,19 @@ async function deleteDepartment(req: Request, res: Response) {
 
 async function createDepartment(req: Request, res: Response) {
   const { body } = req;
+
   const fields = [
-    isString(body.name) ? 'name' : null,
-    isString(body.csv) ? 'csv' : null,
+    'name',
+    'csv',
     'slug',
-    isString(body.description) ? 'description' : null,
+    'description',
   ]
+
 
   const values = [
     isString(body.name) ? body.name : '',
-    isString(body.csv) ? body.csv : '',
-    isString(body.name) ? slugify(body.name) : '',
+    isString(body.csv) ? body.csv : `${body.name  }.csv`,
+    slugify(body.name),
     isString(body.description) ? body.description : '',
   ]
 
@@ -85,14 +88,31 @@ async function createDepartment(req: Request, res: Response) {
     })
   }
 
+  const numOfCols = [];
+  for (let i = 1; i < filteredFields.length + 1; i+=1) {
+    numOfCols.push(`$${i}`)
+  }
+
   // Description valkvæmt og þarf að vera sett inn conditionally
   const q = `
     INSERT INTO departments
-      (name, csv, slug, description)
+      (${filteredFields.join(', ')})
     VALUES
-      ($1, $2, $3, $4)
+      (${numOfCols.join(', ')})
     RETURNING *
     `;
+
+  const exists = await departmentExists(body.name);
+  if (exists) {
+    const errors = [
+      {
+        error: 'Department already exists',
+      }
+    ]
+    return res.status(400).json({
+      errors,
+    });
+  }
 
   const queryValues = filteredValues;
   const result = await query(q, queryValues);
@@ -173,5 +193,5 @@ departmentsRouter.get('/departments', async (req: Request, res: Response, next: 
 });
 departmentsRouter.get('/departments/:slug', departmentRoute);
 departmentsRouter.post('/departments', createDepartment);
-departmentsRouter.delete('/departments/:slug/delete', catchErrors(deleteDepartment));
+departmentsRouter.delete('/departments/:slug', catchErrors(deleteDepartment));
 

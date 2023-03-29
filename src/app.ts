@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { router } from './routes/api.js';
 import { departmentsRouter } from './routes/departmentsRouter.js';
 import { classesRouter } from './routes/classesRouter.js';
+import { cors } from './lib/cors.js';
 
 dotenv.config();
 
@@ -10,11 +11,12 @@ const app = express();
 
 app.use(express.json());
 
+app.use(cors);
 app.use(router);
 app.use(departmentsRouter);
 app.use(classesRouter);
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 app.listen(port, () => {
   console.info(`Server running at http://localhost:${port}/`);

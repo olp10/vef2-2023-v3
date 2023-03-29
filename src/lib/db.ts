@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { readFile } from 'fs/promises';
 import pg from 'pg';
 import { join } from 'path';
@@ -148,7 +149,11 @@ export async function dbDeleteClass(classSlug : string) {
   return result?.rows[0]?.id;
 }
 
-export async function conditionalUpdate(table : string, id : string, fields : Array<string | null>, values : Array<string>) {
+export async function conditionalUpdate(
+  table : string,
+  id : string,
+  fields : Array<string | null>,
+  values : Array<string>) {
 
   if (!fields) {
     return null;
